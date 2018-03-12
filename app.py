@@ -1,13 +1,9 @@
 from flask import Flask
 from flask import request
 import time
-class counter_click:
-	def __init__(self):
-		counter = 0	
 
 
 app = Flask(__name__)
-a = counter_click();
 
 @app.route('/')
 def hello():
@@ -32,8 +28,7 @@ def user_agent():
 
 @app.route('/counter')
 def time_now():
-	counter += 1
-    return counter
+    return 3
 
 
 if __name__ == '__main__':
