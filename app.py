@@ -24,7 +24,7 @@ def time_now():
 @app.route('/user-agent')
 def user_agent():
     platform = Mobile 
-    if request.user_agent.platform == "windows" or
+    #if request.user_agent.platform == "windows" or
     return f'{request.user_agent.string}'
 
 
