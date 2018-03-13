@@ -21,11 +21,6 @@ def hello():
     return 'Hello, World!'
 
 
-@app.route('/request')  # usuń tę funkcję
-def request_info():
-    return f'request method: {request.method} url: {request.url} headers: {request.headers}'
-
-
 @app.route('/now')
 def time_now():
     return time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "." + str(int((time.time() % 1) * 10 ** 6))
