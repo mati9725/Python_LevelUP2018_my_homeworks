@@ -43,7 +43,7 @@ def index():
 
 @app.route("/login", methods=['POST'])
 def login():
-    if request.authorization is None:
+    if request.authorization == None:
         resp = make_response(abort(401))
         resp.set_cookie('is_logged', '')
         return resp
@@ -53,6 +53,7 @@ def login():
             resp = make_response(redirect("/hello", code=302))
             a = random()
             users[request.authorization.username]['token'] = str(a)
+            print(users)
             resp.set_cookie("is_logged", f'{request.authorization.username}:{str(a)}')
             return resp
         else:
@@ -70,12 +71,12 @@ def logout():
 
 
 @app.route("/hello")
-def hello():
-    if request.cookies.get('is_logged') is None:
+def hello():    
+    if request.cookies.get('is_logged') == None:
         abort(401)
     cookie = request.cookies.get('is_logged')
     cookie = cookie.split(":")
-    if cookie[0] in users:
+    if cookie[0] in users and str(cookie[1]) == users[cookie[0]]['token']:
         return render_template(
             'greetings_tmpl.html',
             greeting=f'Hello, {cookie[0]}!'
@@ -86,17 +87,10 @@ def hello():
 
 @app.route("/fishes", methods=["GET", "POST"])
 def fishes():
-    if request.cookies.get('is_logged') is None:
-        abort(401)
-    cookie = request.cookies.get('is_logged')
-    cookie = cookie.split(":")
-    if cookie[0] in users:
-        if request.method == 'GET':
-            return get_fishes()
-        elif request.method == 'POST':
-            return post_fish()
-    else:
-        abort(401)
+    if request.method == 'GET':
+        return get_fishes()
+    elif request.method == 'POST':
+        return post_fish()
 
 
 def post_fish():
@@ -108,30 +102,22 @@ def get_fishes():
     id_list = sorted(list(fish_list))
     resp = {}
     for ID in id_list:
-        resp[ID] = fish_list[ID]
-    return json.dumps(resp)
+        resp[ID] = fish_list[ID]["kind"]
+    #    print(json.dumps(resp))
+    #    print(resp.values())
+    return json.dumps(resp)  # zwracać z ID  czy bez?
 
 
 @app.route("/fishes/<fish_id>", methods=["GET", "PUT", "PATCH", "DELETE"])
 def fishes_by_id(fish_id):
-    if request.cookies.get('is_logged') is None:
-        abort(401)
-    cookie = request.cookies.get('is_logged')
-    cookie = cookie.split(":")
-    if cookie[0] in users:
-        if fish_id in fish_list:
-            if request.method == 'GET':
-                return get_fish_by_id(fish_id)
-            elif request.method == 'DELETE':
-                return delete_fish_by_id(fish_id)
-            elif request.method == 'PUT':
-                return put_fish_by_id(fish_id)
-            elif request.method == 'PATCH':
-                return patch_fish_by_id(fish_id)
-        else:
-            abort(400, "niepoprawne id rybki")
-    else:
-        abort(401)
+    if request.method == 'GET':
+        return get_fish_by_id(fish_id)
+    elif request.method == 'DELETE':
+        return delete_fish_by_id(fish_id)
+    elif request.method == 'PUT':
+        return put_fish_by_id(fish_id)
+    elif request.method == 'PATCH':
+        return patch_fish_by_id(fish_id)
 
 
 def get_fish_by_id(fish_id):
@@ -140,12 +126,12 @@ def get_fish_by_id(fish_id):
 
 def delete_fish_by_id(fish_id):
     del (fish_list[fish_id])
-    return f"Fish with ID = {fish_id} has been deleted"
+    return f"Fish with ID {fish_id} has been deleted"  # nie testowane
 
 
 def put_fish_by_id(fish_id):
     fish_list[fish_id] = request.get_json()
-    return f"Fish with ID = {fish_id} has been putted"
+    return f"Fish with ID {fish_id} has been putted"  # nie testowane"""
 
 
 def patch_fish_by_id(fish_id):
@@ -153,7 +139,7 @@ def patch_fish_by_id(fish_id):
     for position in fish_list[fish_id]:
         if position in data:
             fish_list[fish_id][position] = data[position]
-    return f"Fish with ID = {fish_id} has been patched"
+    return f"Fish with ID {fish_id} has been patched"  # nie testowane
 
 
 if __name__ == '__main__':
