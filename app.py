@@ -75,7 +75,7 @@ def hello():
         abort(401)
     cookie = request.cookies.get('is_logged')
     cookie = cookie.split(":")
-    if cookie[0] in users and str(cookie[1]) == users[cookie[0]]['token']:
+    if cookie[0] in users:
         return render_template(
             'greetings_tmpl.html',
             greeting=f'Hello, {cookie[0]}!'
@@ -90,7 +90,7 @@ def fishes():
         abort(401)
     cookie = request.cookies.get('is_logged')
     cookie = cookie.split(":")
-    if cookie[0] in users and str(cookie[1]) == users[cookie[0]]['token']:
+    if cookie[0] in users:
         if request.method == 'GET':
             return get_fishes()
         elif request.method == 'POST':
@@ -118,7 +118,7 @@ def fishes_by_id(fish_id):
         abort(401)
     cookie = request.cookies.get('is_logged')
     cookie = cookie.split(":")
-    if cookie[0] in users and str(cookie[1]) == users[cookie[0]]['token']:
+    if cookie[0] in users:
         if fish_id in fish_list:
             if request.method == 'GET':
                 return get_fish_by_id(fish_id)
@@ -140,12 +140,12 @@ def get_fish_by_id(fish_id):
 
 def delete_fish_by_id(fish_id):
     del (fish_list[fish_id])
-    return f"Fish with ID = {fish_id} has been deleted"  # nie testowane
+    return f"Fish with ID = {fish_id} has been deleted"
 
 
 def put_fish_by_id(fish_id):
     fish_list[fish_id] = request.get_json()
-    return f"Fish with ID = {fish_id} has been putted"  # nie testowane"""
+    return f"Fish with ID = {fish_id} has been putted"
 
 
 def patch_fish_by_id(fish_id):
@@ -153,7 +153,7 @@ def patch_fish_by_id(fish_id):
     for position in fish_list[fish_id]:
         if position in data:
             fish_list[fish_id][position] = data[position]
-    return f"Fish with ID = {fish_id} has been patched"  # nie testowane
+    return f"Fish with ID = {fish_id} has been patched"
 
 
 if __name__ == '__main__':
