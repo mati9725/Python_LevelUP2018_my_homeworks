@@ -1,8 +1,6 @@
 from random import random
-
 from flask import Flask, request, render_template, make_response, redirect, abort
 import json
-import requests
 
 app = Flask(__name__)
 
@@ -166,4 +164,4 @@ def patch_fish_by_id(fish_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
