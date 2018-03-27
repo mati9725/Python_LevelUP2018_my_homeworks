@@ -2,6 +2,7 @@ from random import random
 
 from flask import Flask, request, render_template, make_response, redirect, abort
 import json
+import requests
 
 app = Flask(__name__)
 
@@ -36,12 +37,12 @@ fish_list = {
 }
 
 
-@app.route("/")
+@app.route("/", methods=['POST', 'GET'])
 def index():
     return 'hello from flask'
 
 
-@app.route("/login", methods=['POST'])
+@app.route("/login", methods=['POST', 'GET'])
 def login():
     if request.authorization is None:
         resp = make_response(abort(401))
@@ -61,18 +62,25 @@ def login():
             return resp
 
 
-@app.route("/logout", methods=['POST'])
+@app.route("/logout", methods=['POST', 'GET'])
 def logout():
-    if request.method == 'POST':
-        resp = make_response('Logout successful!')
-        resp.set_cookie('is_logged', '')
-        return resp
+    if request.cookies.get('is_logged') is None:
+        return redirect("/login", code=302)
+    cookie = request.cookies.get('is_logged')
+    cookie = cookie.split(":")
+    if cookie[0] in users and str(cookie[1]) == users[cookie[0]]['token']:
+        if request.method == 'POST':
+            resp = make_response(redirect('/', code=302))
+            resp.set_cookie('is_logged', '')
+            return resp
+    else:
+        return redirect('/login', code=302)
 
 
 @app.route("/hello")
 def hello():
     if request.cookies.get('is_logged') is None:
-        abort(401)
+        return redirect('/login', code=302)
     cookie = request.cookies.get('is_logged')
     cookie = cookie.split(":")
     if cookie[0] in users and str(cookie[1]) == users[cookie[0]]['token']:
@@ -81,13 +89,13 @@ def hello():
             greeting=f'Hello, {cookie[0]}!'
         )
     else:
-        abort(401)
+        return redirect('/login', code=302)
 
 
 @app.route("/fishes", methods=["GET", "POST"])
 def fishes():
     if request.cookies.get('is_logged') is None:
-        abort(401)
+        return redirect('/login', code=302)
     cookie = request.cookies.get('is_logged')
     cookie = cookie.split(":")
     if cookie[0] in users and str(cookie[1]) == users[cookie[0]]['token']:
@@ -96,12 +104,13 @@ def fishes():
         elif request.method == 'POST':
             return post_fish()
     else:
-        abort(401)
+        return redirect('/login', code=302)
 
 
 def post_fish():
-    fish_list[f"id_{len(fish_list)+1}"] = request.get_json()
-    return "Your fish has been added"
+    next_id = len(fish_list)+1
+    fish_list[f"id_{next_id}"] = request.get_json()
+    return redirect(f"/fishes/id_{next_id}")
 
 
 def get_fishes():
@@ -115,7 +124,7 @@ def get_fishes():
 @app.route("/fishes/<fish_id>", methods=["GET", "PUT", "PATCH", "DELETE"])
 def fishes_by_id(fish_id):
     if request.cookies.get('is_logged') is None:
-        abort(401)
+        return redirect('/login', code=302)
     cookie = request.cookies.get('is_logged')
     cookie = cookie.split(":")
     if cookie[0] in users and str(cookie[1]) == users[cookie[0]]['token']:
@@ -131,7 +140,7 @@ def fishes_by_id(fish_id):
         else:
             abort(400, "niepoprawne id rybki")
     else:
-        abort(401)
+        return redirect('/login', code=302)
 
 
 def get_fish_by_id(fish_id):
@@ -157,4 +166,4 @@ def patch_fish_by_id(fish_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=False)
+    app.run(debug=True)
