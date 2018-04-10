@@ -1,4 +1,5 @@
 from random import random
+import time
 from flask import Flask, request, render_template, make_response, redirect, abort, g
 import sqlite3
 import json
@@ -66,18 +67,20 @@ def post_city():
     c.execute("INSERT  INTO city (country_id, city) VALUES (?, ?)", (input['country_id'], input['city_name']))
     db.commit()
     c.execute("SELECT city_id FROM city ORDER BY city_id DESC LIMIT 1")
-    data= c.fetchall()
-    response={"country_id": input['country_id'], "city_name": input['city_name'], "city_id": data[0][0]}
+    data = c.fetchall()
+    response = {"country_id": input['country_id'], "city_name": input['city_name'], "city_id": data[0][0]}
     return json.dumps(response), 200
     ###Dodać autoink city ID i nullable last_modify w city
+
 
 @app.route("/lang_roles", methods=['GET'])
 def lang_roles():
     db = get_db()
     c = db.cursor()
-    c.execute("select count(language_id) from (select film_actor.film_id, film_actor.actor_id, film.language_id, language.name from film_actor join film on film_actor.film_id = film.film_id join language on language.language_id = film.language_id) group by name order by name asc")
-    data= c.fetchall()
-    for i in range (0, 6):
+    c.execute(
+        "SELECT count(language_id) FROM (SELECT film_actor.film_id, film_actor.actor_id, film.language_id, language.name FROM film_actor JOIN film ON film_actor.film_id = film.film_id JOIN language ON language.language_id = film.language_id) GROUP BY name ORDER BY name ASC")
+    data = c.fetchall()
+    for i in range(0, 6):
         data.append(0)
     print (type(data))
     print (len(data))
@@ -91,6 +94,48 @@ def lang_roles():
         "French": data[1]
     }
     return json.dumps(response)
+
+
+@app.route('/now')
+def time_now():
+    return time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()) + "." + str(int((time.time() % 1) * 10 ** 6))
+
+
+@app.route('/user-agent')
+def user_agent():
+    name = request.user_agent.platform
+    name = name.lower()
+    if name == "windows" or name == "macos" or name == "linux":
+        response = f'PC / {name[0].upper()}'
+    else:
+        response = f'Mobile / {name[0].upper()}'
+    name = request.user_agent.platform
+    response += name[1:] + " / "
+    name = request.user_agent.browser
+    response += name[0].upper()
+    response += name[1:]
+    response = response + " " + request.user_agent.version
+    return response
+
+
+class count_it:
+    def __init__(self):
+        self.counter = 0
+
+    def count_up(self):
+        self.counter += 1
+        return self.counter
+counter1 = count_it()
+
+
+@app.route('/counter')
+def countit():
+    return str(counter1.count_up())
+
+
+@app.route('/request', methods=['POST', 'GET'])
+def request_info():
+    return f'request method: {request.method} url: {request.url} headers: {request.headers} </br>autoryzacja: od|{request.authorization}|do</br>'
 
 
 if __name__ == '__main__':
