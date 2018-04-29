@@ -99,30 +99,6 @@ def post_city():
     data = c.fetchall()
     response = {"country_id": input['country_id'], "city_name": input['city_name'], "city_id": data[0][0]}
     return json.dumps(response), 200
-    ###Dodać autoink city ID i nullable last_modify w city
-
-
-@app.route("/lang_roles", methods=['GET'])
-def lang_roles():
-    db = get_db()
-    c = db.cursor()
-    c.execute(
-        "SELECT count(language_id) FROM (SELECT film_actor.film_id, film_actor.actor_id, film.language_id, language.name FROM film_actor JOIN film ON film_actor.film_id = film.film_id JOIN language ON language.language_id = film.language_id) GROUP BY name ORDER BY name ASC")
-    data = c.fetchall()
-    for i in range(0, 6):
-        data.append(0)
-    print (type(data))
-    print (len(data))
-    print (data[1])
-    response = {
-        "English": data[0][0],
-        "Italian": data[3],
-        "Japanese": data[4],
-        "Mandarin": data[5],
-        "German": data[2],
-        "French": data[1]
-    }
-    return json.dumps(response)
 
 
 @app.route('/now')
@@ -154,6 +130,8 @@ class count_it:
     def count_up(self):
         self.counter += 1
         return self.counter
+
+
 counter1 = count_it()
 
 
